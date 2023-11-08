@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using SharedModels;
 using SmallSimpleApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,28 +16,24 @@ builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
     options.ApiVersionReader = new UrlSegmentApiVersionReader();
+    options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true;
-});
-builder.Services.AddVersionedApiExplorer(options =>
-{
-    options.GroupNameFormat = "'v'VVV";
-    options.SubstituteApiVersionInUrl = true;
 });
 
 // Add Swagger with a security header integration
 builder.Services.AddSwaggerGen(swaggerOptions =>
 {
-    swaggerOptions.SwaggerDoc("v1", new OpenApiInfo { Title = "Small Simple API", Version = "v1" });
-    swaggerOptions.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Small Simple API.xml"));
+    swaggerOptions.SwaggerDoc("v1", new OpenApiInfo { Title = "Small Simple API", Version = "1.0" });
+    swaggerOptions.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "SmallSimpleAPI.xml"));
     swaggerOptions.AddSecurityDefinition(
-        "X-SECURITY-HEADER",
+        ApiHeaderSettings.ApiHeaderKey,
         new OpenApiSecurityScheme
         {
             In = ParameterLocation.Header,
-            Description = $"Your X-SECURITY-HEADER",
-            Name = "X-SECURITY-HEADER",
+            Description = $"Your {ApiHeaderSettings.ApiHeaderKey}",
+            Name = ApiHeaderSettings.ApiHeaderKey,
             Type = SecuritySchemeType.ApiKey,
-            Scheme = "X-SECURITY-HEADER"
+            Scheme = ApiHeaderSettings.ApiHeaderKey
         }
     );
     swaggerOptions.AddSecurityRequirement(
@@ -48,7 +45,7 @@ builder.Services.AddSwaggerGen(swaggerOptions =>
                     Reference = new OpenApiReference
                     {
                         Type = ReferenceType.SecurityScheme,
-                        Id = "X-SECURITY-HEADER"
+                        Id = ApiHeaderSettings.ApiHeaderKey
                     },
                     In = ParameterLocation.Header
                 },

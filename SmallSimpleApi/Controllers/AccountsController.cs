@@ -29,10 +29,15 @@ public class AccountsController : ControllerBase
     /// <returns>Set of account identifiers.</returns>
     [HttpGet]
     [Produces(typeof(Guid[]))]
-    public IActionResult GetAccountIdsAsync() =>
-        Ok(
+    public IActionResult GetAccountIdsAsync()
+    {
+        if (!IsValidHeader())
+            return CreateUnauthorizedResult();
+
+        return Ok(
             _accountsService.GetAccountIds()
         );
+    }
 
     /// <summary>
     /// Get an account linked to an identifier.
@@ -41,10 +46,15 @@ public class AccountsController : ControllerBase
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
     [HttpGet("id")]
     [Produces(typeof(ApiAccount))]
-    public IActionResult GetAccountAsync(Guid id) =>
-        Ok(
+    public IActionResult GetAccountAsync(Guid id)
+    {
+        if (!IsValidHeader())
+            return CreateUnauthorizedResult();
+
+        return Ok(
             _accountsService.GetAccount(id)
         );
+    }
 
     /// <summary>
     /// Create a new account.
@@ -53,10 +63,16 @@ public class AccountsController : ControllerBase
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
     [HttpPost("id")]
     [Produces(typeof(ApiAccount))]
-    public IActionResult CreateAccountAsync(Guid id) =>
-        Ok(
+    public IActionResult CreateAccountAsync(Guid id)
+    {
+
+        if (!IsValidHeader())
+            return CreateUnauthorizedResult();
+
+        return Ok(
             _accountsService.CreateAccount(id)
         );
+    }
 
     /// <summary>
     /// Update an existing account.
@@ -65,10 +81,15 @@ public class AccountsController : ControllerBase
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
     [HttpPut("id")]
     [Produces(typeof(ApiAccount))]
-    public IActionResult UpdateAccountAsync(Guid id) =>
-        Ok(
+    public IActionResult UpdateAccountAsync(Guid id)
+    {
+        if (!IsValidHeader())
+            return CreateUnauthorizedResult();
+
+        return Ok(
             _accountsService.UpdateAccount(id)
         );
+    }
 
     /// <summary>
     /// Delete an existing account.
@@ -78,7 +99,20 @@ public class AccountsController : ControllerBase
     [Produces(typeof(ApiAccount))]
     public IActionResult DeleteAccountAsync(Guid id)
     {
+        if (!IsValidHeader())
+            return CreateUnauthorizedResult();
+
         _accountsService.DeleteAccount(id);
         return NoContent();
     }
+
+    private bool IsValidHeader() =>
+        ApiHeaderSettings.ApiHeaderValue.Equals(
+            Request.Headers.ContainsKey(ApiHeaderSettings.ApiHeaderKey)
+                ? Request.Headers[ApiHeaderSettings.ApiHeaderKey].ToString()
+                : string.Empty
+        );
+
+    private IActionResult CreateUnauthorizedResult() =>
+        Unauthorized(new ApiError($"Invalid value for header '{ApiHeaderSettings.ApiHeaderKey}'"));
 }
