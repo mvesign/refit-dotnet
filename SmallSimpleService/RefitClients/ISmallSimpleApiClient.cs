@@ -16,8 +16,8 @@ public interface ISmallSimpleApiClient
     /// </summary>
     /// <param name="stoppingToken">Token to stop the request.</param>
     /// <returns>Set of account identifiers.</returns>
-    [Get("/accounts")]
-    Task<Guid[]> GetAccountsAsync(CancellationToken stoppingToken);
+    [Get("/v1.0/accounts")]
+    Task<Guid[]> GetAccountIdsAsync(CancellationToken stoppingToken);
 
     /// <summary>
     /// Get an account linked to an identifier.
@@ -25,7 +25,7 @@ public interface ISmallSimpleApiClient
     /// <param name="id">Identifier of an account.</param>
     /// <param name="stoppingToken">Token to stop the request.</param>
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
-    [Get("/accounts/{id}")]
+    [Get("/v1.0/accounts/{id}")]
     Task<ApiAccount> GetAccountAsync(Guid id, CancellationToken stoppingToken);
 
     /// <summary>
@@ -34,7 +34,7 @@ public interface ISmallSimpleApiClient
     /// <param name="id">Identifier of an account.</param>
     /// <param name="stoppingToken">Token to stop the request.</param>
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
-    [Post("/accounts/{id}")]
+    [Post("/v1.0/accounts/{id}")]
     Task<ApiAccount> CreateAccountAsync(Guid id, CancellationToken stoppingToken);
 
     /// <summary>
@@ -43,7 +43,7 @@ public interface ISmallSimpleApiClient
     /// <param name="id">Identifier of an account.</param>
     /// <param name="stoppingToken">Token to stop the request.</param>
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
-    [Put("/accounts/{id}")]
+    [Put("/v1.0/accounts/{id}")]
     Task<ApiAccount> UpdateAccountAsync(Guid id, CancellationToken stoppingToken);
 
     /// <summary>
@@ -51,6 +51,6 @@ public interface ISmallSimpleApiClient
     /// </summary>
     /// <param name="id">Identifier of an account.</param>
     /// <param name="stoppingToken">Token to stop the request.</param>
-    [Delete("/accounts/{id}")]
+    [Delete("/v1.0/accounts/{id}")]
     Task DeleteAccountAsync(Guid id, CancellationToken stoppingToken);
 }

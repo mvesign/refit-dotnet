@@ -11,8 +11,6 @@ using SmallSimpleService.RefitClients;
 using SmallSimpleService.Services;
 using SmallSimpleService.Settings;
 
-Console.WriteLine("Hello, World!");
-
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(builder =>
     {

@@ -33,11 +33,11 @@ public class SmallSimpleApiService
     /// <param name="stoppingToken">Token to stop the request.</param>
     /// <returns>Set of account identifiers.</returns>
     /// <exception cref="ApiException">Thrown when the request wasn't successful.</exception>
-    public async Task<Guid[]> GetAccountsAsync(CancellationToken stoppingToken)
+    public async Task<Guid[]> GetAccountIdsAsync(CancellationToken stoppingToken)
     {
         try
         {
-            return await _smallSimpleApiClient.GetAccountsAsync(stoppingToken);
+            return await _smallSimpleApiClient.GetAccountIdsAsync(stoppingToken);
         }
         catch (ApiException exception)
         {

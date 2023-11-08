@@ -30,11 +30,15 @@ public class Worker : BackgroundService
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // First let us try to get all accounts from the API.
-        var accountIds = await _smallSimpleApiService.GetAccountsAsync(stoppingToken);
+        // First let us try to get all account identifiers from the API.
+        var accountIds = await _smallSimpleApiService.GetAccountIdsAsync(stoppingToken);
         if (accountIds.Length > 0)
             foreach (var accountId in accountIds)
+                // Than we process each account identifier with an appropriate and pre-defined action. 
                 await ProcessAccountIdAsync(accountId, stoppingToken);
+        
+        // And after all that, we wait for several seconds so we can do all over again.
+        Thread.Sleep(10);
     }
 
     private async Task ProcessAccountIdAsync(Guid accountId, CancellationToken stoppingToken)
@@ -58,18 +62,18 @@ public class Worker : BackgroundService
     {
         var createdAccount = await _smallSimpleApiService.CreateAccountAsync(accountId, stoppingToken);
         if (createdAccount == null)
-            _logger.LogWarning("No account with id '{Id}' created", accountId);
+            _logger.LogWarning("Account '{Id}' not created", accountId);
         else
-            _logger.LogInformation("Account with id '{Id}' created", accountId);
+            _logger.LogInformation("Account '{Id}' created - Counter: {Counter}", accountId, createdAccount.Counter);
     }
 
     private async Task FollowUpdateFlowAsync(ApiAccount account, CancellationToken stoppingToken)
     {
         var updatedAccount = await _smallSimpleApiService.UpdateAccountAsync(account.Id, stoppingToken);
         if (updatedAccount != null && updatedAccount.Counter == account.Counter + 1)
-            _logger.LogInformation("Account with id '{Id}' updated", account.Id);
+            _logger.LogInformation("Account '{Id}' updated - Counter: {Counter}", updatedAccount.Id, updatedAccount.Counter);
         else
-            _logger.LogWarning("No account with id '{Id}' updated", account.Id);
+            _logger.LogWarning("Account '{Id}' not updated", account.Id);
     }
 
     private async Task FollowDeleteFlowAsync(ApiAccount account, CancellationToken stoppingToken)
@@ -77,8 +81,8 @@ public class Worker : BackgroundService
         var isDeleted = await _smallSimpleApiService.DeleteAccountAsync(account.Id, stoppingToken);
         var deletedAccount = await _smallSimpleApiService.GetAccountAsync(account.Id, stoppingToken);
         if (isDeleted && deletedAccount == null)
-            _logger.LogInformation("Account with id '{Id}' deleted", account.Id);
+            _logger.LogInformation("Account '{Id}' deleted", account.Id);
         else
-            _logger.LogWarning("No account with id '{Id}' deleted", account.Id);
+            _logger.LogWarning("Account '{Id}' not deleted", account.Id);
     }
 }
