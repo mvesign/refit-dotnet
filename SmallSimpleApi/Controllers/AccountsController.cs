@@ -44,7 +44,7 @@ public class AccountsController : ControllerBase
     /// </summary>
     /// <param name="id">Identifier of an account.</param>
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
-    [HttpGet("id")]
+    [HttpGet("{id}")]
     [Produces(typeof(ApiAccount))]
     public IActionResult GetAccountAsync(Guid id)
     {
@@ -61,16 +61,15 @@ public class AccountsController : ControllerBase
     /// </summary>
     /// <param name="id">Identifier of an account.</param>
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
-    [HttpPost("id")]
+    [HttpPost("{id}")]
     [Produces(typeof(ApiAccount))]
     public IActionResult CreateAccountAsync(Guid id)
     {
-
         if (!IsValidHeader())
             return CreateUnauthorizedResult();
 
         return Ok(
-            _accountsService.CreateAccount(id)
+            _accountsService.GetAccount(id)
         );
     }
 
@@ -79,7 +78,7 @@ public class AccountsController : ControllerBase
     /// </summary>
     /// <param name="id">Identifier of an account.</param>
     /// <returns>Account of type <see cref="ApiAccount"/>.</returns>
-    [HttpPut("id")]
+    [HttpPut("{id}")]
     [Produces(typeof(ApiAccount))]
     public IActionResult UpdateAccountAsync(Guid id)
     {
@@ -95,7 +94,7 @@ public class AccountsController : ControllerBase
     /// Delete an existing account.
     /// </summary>
     /// <param name="id">Identifier of an account.</param>
-    [HttpDelete("id")]
+    [HttpDelete("{id}")]
     [Produces(typeof(ApiAccount))]
     public IActionResult DeleteAccountAsync(Guid id)
     {

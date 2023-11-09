@@ -3,8 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SharedModels;
 using SmallSimpleService.Services;
+using SmallSimpleService.Settings;
 
 namespace SmallSimpleService;
 
@@ -13,32 +15,41 @@ namespace SmallSimpleService;
 /// </summary>
 public class Worker : BackgroundService
 {
-    private readonly Logger<Worker> _logger;
+    private readonly ILogger<Worker> _logger;
+    private readonly IOptionsMonitor<SmallSimpleServiceSettings> _smallSimpleServiceSettings;
     private readonly SmallSimpleApiService _smallSimpleApiService;
 
     /// <summary>
     /// Ctor.
     /// </summary>
     /// <param name="logger">Logger.</param>
-    /// <param name="smallSimpleApiService">Small Simple API service.</param>
-    public Worker(Logger<Worker> logger, SmallSimpleApiService smallSimpleApiService)
+    /// <param name="smallSimpleServiceSettings">Small simple service settings of type <see cref="SmallSimpleServiceSettings"/>.</param>
+    /// <param name="smallSimpleApiService">Small Simple API service of type <see cref="SmallSimpleApiService"/>.</param>
+    public Worker(
+        ILogger<Worker> logger, IOptionsMonitor<SmallSimpleServiceSettings> smallSimpleServiceSettings,
+        SmallSimpleApiService smallSimpleApiService
+    )
     {
         _logger = logger;
+        _smallSimpleServiceSettings = smallSimpleServiceSettings;
         _smallSimpleApiService = smallSimpleApiService;
     }
 
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // First let us try to get all account identifiers from the API.
-        var accountIds = await _smallSimpleApiService.GetAccountIdsAsync(stoppingToken);
-        if (accountIds.Length > 0)
-            foreach (var accountId in accountIds)
-                // Than we process each account identifier with an appropriate and pre-defined action. 
-                await ProcessAccountIdAsync(accountId, stoppingToken);
-        
-        // And after all that, we wait for several seconds so we can do all over again.
-        Thread.Sleep(10);
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            // First let us try to get all account identifiers from the API.
+            var accountIds = await _smallSimpleApiService.GetAccountIdsAsync(stoppingToken);
+            if (accountIds.Length > 0)
+                foreach (var accountId in accountIds)
+                    // Than we process each account identifier with an appropriate and pre-defined action. 
+                    await ProcessAccountIdAsync(accountId, stoppingToken);
+
+            // And after all that, we wait for several seconds so we can do all over again.
+            Thread.Sleep(_smallSimpleServiceSettings.CurrentValue.SleepPeriodInMilliseconds);
+        }
     }
 
     private async Task ProcessAccountIdAsync(Guid accountId, CancellationToken stoppingToken)
@@ -51,7 +62,7 @@ public class Worker : BackgroundService
             await FollowCreateFlowAsync(accountId, stoppingToken);
         // Otherwise we will update the existing one by incrementing the update counter.
         // And only if the account isn't updated for to many times.
-        else if (account.Counter < 10)
+        else if (account.Counter < _smallSimpleServiceSettings.CurrentValue.DeleteAccountAfterUpdates)
             await FollowUpdateFlowAsync(account, stoppingToken);
         // But if the account is updated for to many times, we delete it.
         else
@@ -80,7 +91,7 @@ public class Worker : BackgroundService
     {
         var isDeleted = await _smallSimpleApiService.DeleteAccountAsync(account.Id, stoppingToken);
         var deletedAccount = await _smallSimpleApiService.GetAccountAsync(account.Id, stoppingToken);
-        if (isDeleted && deletedAccount == null)
+        if (isDeleted && (deletedAccount == null || deletedAccount.Counter < account.Counter))
             _logger.LogInformation("Account '{Id}' deleted", account.Id);
         else
             _logger.LogWarning("Account '{Id}' not deleted", account.Id);

@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SmallSimpleService;
 using SmallSimpleService.Extensions;
 using SmallSimpleService.Models;
@@ -22,7 +23,8 @@ var builder = Host.CreateDefaultBuilder(args)
         // This can be done by using the internal 'JsonSerializerOptions' class.
         var jsonSerializerOptions = new JsonSerializerOptions();
 
-        // Add the wrapper service
+        // Add the wrapper service with its settings
+        services.Configure<SmallSimpleServiceSettings>(context.Configuration.GetSection("SmallSimpleServiceSettings"));
         services.AddSingleton<SmallSimpleApiService>();
 
         // Setup a predefined HTTP policies to be usable for any HTTP clients.
@@ -34,6 +36,10 @@ var builder = Host.CreateDefaultBuilder(args)
             jsonSerializerOptions, HttpPolicyKey.Retry, HttpPolicyKey.CircuitBreaker
         );
 
+        // Enable internal logging to see something appear on the console.
+        services.AddLogging(builder => builder.AddConsole());
+
+        // And make sure we have an entrypoint to start this service.
         services.AddHostedService<Worker>();
     });
 

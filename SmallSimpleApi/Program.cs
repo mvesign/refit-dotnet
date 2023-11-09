@@ -4,10 +4,12 @@ using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using SharedModels;
 using SmallSimpleApi.Services;
+using SmallSimpleApi.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,7 +59,8 @@ builder.Services.AddSwaggerGen(swaggerOptions =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add our custom services
+// Add our custom services and settings
+builder.Services.Configure<AccountSettings>(builder.Configuration.GetSection("HttpPolicies"));
 builder.Services.AddSingleton<AccountsService>();
 
 // And finally add the API controllers.

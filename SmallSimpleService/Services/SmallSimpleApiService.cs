@@ -13,15 +13,15 @@ namespace SmallSimpleService.Services;
 /// </summary>
 public class SmallSimpleApiService
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<SmallSimpleApiService> _logger;
     private readonly ISmallSimpleApiClient _smallSimpleApiClient;
 
     /// <summary>
     /// Ctor.
     /// </summary>
     /// <param name="logger">Logger.</param>
-    /// <param name="smallSimpleApiClient">Small Simple API client interface.</param>
-    public SmallSimpleApiService(ILogger logger, ISmallSimpleApiClient smallSimpleApiClient)
+    /// <param name="smallSimpleApiClient">Small Simple API client interface of type <see cref="ISmallSimpleApiClient"/>.</param>
+    public SmallSimpleApiService(ILogger<SmallSimpleApiService> logger, ISmallSimpleApiClient smallSimpleApiClient)
     {
         _logger = logger;
         _smallSimpleApiClient = smallSimpleApiClient;
